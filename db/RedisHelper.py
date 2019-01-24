@@ -93,8 +93,8 @@ class RedisHelper(ISqlHelper):
         return count
 
     def select(self, count=None, conditions=None):
-        count = (count and int(count)) or 1000  # 最多返回1000条数据
-        count = 1000 if count > 1000 else count
+        count = (count and int(count)) or 1000  # 默认返回1000条数据
+        # count = 1000 if count > 1000 else count
 
         querys = {k: v for k, v in conditions.items() if k in self.index_names} if conditions else None
         if querys:
@@ -110,6 +110,10 @@ class RedisHelper(ISqlHelper):
             p = self.get_proxy_by_name(name)
             result.append((p.ip, p.port, p.score))
         return result
+
+    def select_random(self):
+        # TODO
+        pass
 
 
 if __name__ == '__main__':

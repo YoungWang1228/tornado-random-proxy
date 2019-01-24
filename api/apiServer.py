@@ -8,6 +8,9 @@ import web
 import config
 from db.DataStore import sqlhelper
 from db.SqlHelper import Proxy
+import logging
+
+logger = logging.getLogger()
 
 urls = (
     '/', 'select',
@@ -16,6 +19,7 @@ urls = (
 
 
 def start_api_server():
+    logger.info(">>>>>> API 服务启动！端口：%d" % config.API_PORT)
     sys.argv.append('0.0.0.0:%s' % config.API_PORT)
     app = web.application(urls, globals())
     app.run()

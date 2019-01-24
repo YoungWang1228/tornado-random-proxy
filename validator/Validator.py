@@ -16,7 +16,9 @@ from multiprocessing import Process, Queue
 import config
 from db.DataStore import sqlhelper
 from util.exception import Test_URL_Fail
+import logging
 
+logger = logging.getLogger()
 
 def detect_from_db(myip, proxy, proxies_set):
     proxy_dict = {'ip': proxy[0], 'port': proxy[1]}
@@ -26,13 +28,14 @@ def detect_from_db(myip, proxy, proxies_set):
         proxies_set.add(proxy_str)
 
     else:
-        if proxy[2] < 1:
-            sqlhelper.delete({'ip': proxy[0], 'port': proxy[1]})
-        else:
-            score = proxy[2]-1
-            sqlhelper.update({'ip': proxy[0], 'port': proxy[1]}, {'score': score})
-            proxy_str = '%s:%s' % (proxy[0], proxy[1])
-            proxies_set.add(proxy_str)
+        sqlhelper.delete({'ip': proxy[0], 'port': proxy[1]})
+        # if proxy[2] < 1:
+        #     sqlhelper.delete({'ip': proxy[0], 'port': proxy[1]})
+        # else:
+        #     score = proxy[2]-1
+        #     sqlhelper.update({'ip': proxy[0], 'port': proxy[1]}, {'score': score})
+        #     proxy_str = '%s:%s' % (proxy[0], proxy[1])
+        #     proxies_set.add(proxy_str)
 
 
 
@@ -205,8 +208,10 @@ def baidu_check(selfip, proxies):
 
 def getMyIP():
     try:
+        logger.info("请求 %s 获取本机公网IP...." % config.TEST_IP)
         r = requests.get(url=config.TEST_IP, headers=config.get_header(), timeout=config.TIMEOUT)
         ip = json.loads(r.text)
+        logger.info("获取到本机IP : %s" % ip['origin'])
         return ip['origin']
     except Exception as e:
         raise Test_URL_Fail

@@ -28,6 +28,7 @@
 import logging
 import re
 import socket
+import config
 
 import tornado.httpserver
 import tornado.ioloop
@@ -240,9 +241,34 @@ def run_proxy(port, pnum=1):
         tornado.ioloop.IOLoop.instance().start()
 
 
+def _start_random_proxy(port=8888, white=None, user=None, fork=1):
+    global white_iplist, base_auth_user, base_auth_passwd
+    white_iplist = white or []
+
+    if user:
+        base_auth_user, base_auth_passwd = user.split(':')
+    else:
+        base_auth_user, base_auth_passwd = None, None
+
+    # print("Starting HTTP proxy on port %d" % port)
+    logger.info(">>>>>> 随机代理服务器启动！端口：%d" % port)
+    run_proxy(port, fork)
+
+
+def start_random_proxy():
+    _start_random_proxy(
+        port=int(config.RANDOM_PROXY_PORT),
+        white=config.RANDOM_PROXY_WHITE,
+        user=config.RANDOM_PROXY_USER,
+        fork=int(config.RANDOM_PROXY_FORK)
+    )
+
+
+white_iplist = []
+
 if __name__ == '__main__':
     import argparse
-    white_iplist = []
+
     parser = argparse.ArgumentParser(description='''python -m toproxy/proxy  -p 8888 -w 127.0.0.1,8.8.8.8 -u xiaorui:fengyun''')
 
     parser.add_argument('-p', '--port', help='tonado proxy listen port', action='store', default=8888)
@@ -254,14 +280,5 @@ if __name__ == '__main__':
     if not args.port:
         parser.print_help()
 
-    port = int(args.port)
-    white_iplist = args.white
+    _start_random_proxy(port=int(args.port), white=args.white, user=args.user, fork=int(args.fork))
 
-    if args.user:
-        base_auth_user, base_auth_passwd = args.user.split(':')
-    else:
-        base_auth_user, base_auth_passwd = None, None
-
-    print ("Starting HTTP proxy on port %d" % port)
-
-    run_proxy(port, int(args.fork))
