@@ -6,6 +6,7 @@ from redis import Redis
 import config
 from db.ISqlHelper import ISqlHelper
 from db.SqlHelper import Proxy
+import random
 
 
 class RedisHelper(ISqlHelper):
@@ -111,9 +112,19 @@ class RedisHelper(ISqlHelper):
             result.append((p.ip, p.port, p.score))
         return result
 
-    def select_random(self):
-        # TODO
-        pass
+    def select_random(self, conditions=None):
+        querys = {k: v for k, v in conditions.items() if k in self.index_names} if conditions else None
+        if querys:
+            objects = list(self.get_keys(querys))
+        else:
+            objects = list(
+                self.redis.zrevrangebyscore(self.get_index_name("score"), '+inf', '-inf'))
+
+        s = random.randint(0, len(objects)-1)
+        name = objects[s: s+1]
+        p = self.get_proxy_by_name(name)
+
+        return p.ip, p.port, p.score
 
 
 if __name__ == '__main__':
@@ -129,6 +140,6 @@ if __name__ == '__main__':
     assert sqlhelper.select(conditions={'protocol': 0}) == [('192.168.1.1', '80', '0')]
     assert sqlhelper.update({'types': 1}, {'score': 888}) == 1
     assert sqlhelper.select() == [('192.168.1.1', '80', '888'), ('localhost', '433', '100')]
-    # assert sqlhelper.delete({'types': 1}) == 1
-    # sqlhelper.drop_db()
+    assert sqlhelper.delete({'types': 1}) == 1
+    sqlhelper.drop_db()
     print('All pass.')

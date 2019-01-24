@@ -20,3 +20,6 @@ class ISqlHelper(object):
 
     def select(self, count=None, conditions=None):
         raise NotImplemented
+
+    def select_random(self, conditions=None):
+        raise NotImplemented

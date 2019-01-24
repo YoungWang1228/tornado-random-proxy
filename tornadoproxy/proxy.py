@@ -36,7 +36,7 @@ import tornado.iostream
 import tornado.web
 import tornado.httpclient
 import tornado.netutil
-
+from db.DataStore import sqlhelper
 
 logger = logging.getLogger()
 logging.basicConfig(format='%(asctime)s - %(module)s:%(lineno)s - %(levelname)s: %(message)s',
@@ -177,11 +177,11 @@ class ProxyHandler(tornado.web.RequestHandler):
 
 
 def get_proxy():
-    return None
-    # return {
-    #     "host": "218.60.8.99",
-    #     "port": 3129
-    # }
+    p = sqlhelper.select_random()
+    return {
+        "host": p[0],
+        "port": p[1]
+    }
 
 
 def base_auth_valid(auth_header):

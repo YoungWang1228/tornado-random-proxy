@@ -61,6 +61,9 @@ class MongoHelper(ISqlHelper):
             results.append(result)
         return results
 
+    def select_random(self, conditions=None):
+        pass
+
 
 if __name__ == '__main__':
     # from db.MongoHelper import MongoHelper as SqlHelper

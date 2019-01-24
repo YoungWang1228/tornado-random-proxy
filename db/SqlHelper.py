@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from config import DB_CONFIG, DEFAULT_SCORE
 
 from db.ISqlHelper import ISqlHelper
+import random
 
 '''
 sql操作的基类
@@ -50,7 +51,7 @@ class SqlHelper(ISqlHelper):
         BaseModel.metadata.drop_all(self.engine)
 
 
-    def insert(self, value):
+    def insert(self, value=None):
         proxy = Proxy(ip=value['ip'], port=value['port'], types=value['types'], protocol=value['protocol'],
                       country=value['country'],
                       area=value['area'], speed=value['speed'])
@@ -132,6 +133,25 @@ class SqlHelper(ISqlHelper):
         else:
             return query.order_by(Proxy.score.desc(), Proxy.speed).all()
 
+    def select_random(self, conditions=None):
+        if conditions:
+            conditon_list = []
+            for key in list(conditions.keys()):
+                if self.params.get(key, None):
+                    conditon_list.append(self.params.get(key) == conditions.get(key))
+            conditions = conditon_list
+        else:
+            conditions = []
+
+        query = self.session.query(Proxy.ip, Proxy.port, Proxy.score)
+        if len(conditions) > 0:
+            for condition in conditions:
+                query = query.filter(condition)
+
+        total_num = query.count()
+        random_int = random.randint(0, total_num-1)
+        item = query.slice(random_int, random_int+1).all()
+        return (item and item[0]) or None
 
     def close(self):
         pass
